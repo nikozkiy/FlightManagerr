@@ -1,0 +1,124 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace FlightManager.Menu
+{
+    class UserMenu
+    {
+        public static void ListUserCommands(FlightInformation db)
+        {
+            Console.WriteLine("1 - Create User");
+            Console.WriteLine("2 - Read Users");
+            Console.WriteLine("3 - Update User");
+            Console.WriteLine("4 - Delete User");
+            Console.WriteLine("0 - Exit");
+            Console.WriteLine();
+            Console.Write("Enter your command:");
+            string input = Console.ReadLine();
+
+            int selection = -1;
+            if (int.TryParse(input, out selection))
+            {
+                if (selection == 1)
+                {
+                    UserCreate(db);
+                }
+                else if (selection == 2)
+                {
+                    UserRead(db);
+                }
+                else if (selection == 3)
+                {
+                    UserUpdate(db);
+                }
+
+
+                else if (selection == 4)
+                {
+                   UserRemove(db);
+                }
+            }
+        }
+        public static void UserCreate(FlightInformation db)
+        {
+            Console.Write("User Name: ");
+            string name = Console.ReadLine();
+
+            if (name == "")
+            {
+                Console.WriteLine("Canceled!");
+            }
+            else
+            {
+                Users user = new Users(name);
+                db.Users.Add(user);
+                db.SaveChanges();
+                Console.WriteLine("User Added!");
+
+            }
+        }
+        static void UserRead(FlightInformation db)
+        {
+            Console.WriteLine("Users:");
+            foreach (var users in db.Users)
+            {
+                Console.WriteLine(users.Name);
+            }
+        }
+        static void UserUpdate(FlightInformation db)
+        {
+            UserRead(db);
+            Console.Write("Select User:");
+            string input = Console.ReadLine();
+
+            int selection = -1;
+            if (int.TryParse(input, out selection))
+            {
+                Users item = db.Users.FirstOrDefault(UserCreate => UserCreate.Id == selection);
+                if (item != null)
+                {
+                    Console.Write("Enter new User name: ");
+                    string name = Console.ReadLine();
+
+                    item.Name = name;
+                    db.SaveChanges();
+                    Console.Write("User Updated!");
+
+                }
+                else
+                {
+                    Console.Write("User Not Found!");
+                }
+            }
+        }
+        static void UserRemove(FlightInformation db)
+        {
+            UserRead(db);
+            Console.Write("Select User: ");
+            string input = Console.ReadLine();
+
+            int selection = -1;
+            if (int.TryParse(input, out selection))
+            {
+                Users item = db.Users.FirstOrDefault(Users => Users.Id == selection);
+                if (item == null)
+                {
+                    Console.Write("User Not Found!");
+
+                }
+                else
+                {
+                    Users user = db.Users.Remove(item);
+                    db.SaveChanges();
+                    Console.Write("User Removed!");
+
+                }
+
+            }
+        }
+    }
+}    
+
