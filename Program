@@ -1,0 +1,60 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+
+namespace FlightManager
+{
+    class Program
+    {
+         static void Main(string[] args)
+        {
+            using (FlightInformation db = new FlightInformation())
+
+            {
+                db.Database.CreateIfNotExists();
+                while (true)
+                {
+                    Console.Clear();
+                    ListCommands(db);
+                    Console.ReadLine();
+                }
+            }
+        }
+         static void ListCommands(FlightInformation db)
+        {
+            Console.WriteLine("1 - Menu Commands");
+            Console.WriteLine("2 - User Commands");
+            Console.WriteLine("3 - Reservation Commands");
+            Console.WriteLine("0 - Exit Menu");
+            Console.WriteLine();
+            Console.Write("Enter your command: ");
+            string input = Console.ReadLine();
+
+            int selection = -1;
+            if (int.TryParse(input, out selection))
+            {
+                if (selection == 0)
+                {
+                    Environment.Exit(0);
+                }
+                else if (selection == 1)
+                {
+                    Menu.FlightMenu.ListMenuCommands(db);
+                }
+                else if (selection == 2)
+                {
+                    Menu.UserMenu.ListUserCommands(db);
+                }
+                else if (selection == 3)
+                {
+                    Menu.ReservationMenu.ListReservationCommands(db);
+                }
+            }
+
+
+
+        }
+    }
