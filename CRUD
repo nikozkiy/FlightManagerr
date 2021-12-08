@@ -1,0 +1,335 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace FlightManager.Menu
+{
+    class FlightMenu
+    {
+        public static void ListFlightCommands(FlightManager db)
+        {
+            Console.WriteLine("1 - Create Flight");
+            Console.WriteLine("2 - Read Flight");
+            Console.WriteLine("3 - Update Flight");
+            Console.WriteLine("4 - Delete Flight");
+            Console.WriteLine("5 - Edit Stops in Flight");
+            Console.WriteLine("0 - Exit");
+            Console.WriteLine();
+            Console.Write("Enter your command:");
+            string input = Console.ReadLine();
+
+            int selection = -1;
+            if (int.TryParse(input, out selection))
+            {
+                if (selection == 1)
+                {
+                    FlightCreate(db);
+                }
+                else if (selection == 2)
+                {
+                    FlightRead(db);
+                }
+                else if (selection == 3)
+                {
+                    FlightUpdate(db);
+                }
+                else if (selection == 4)
+                {
+                    FlightRemove(db);
+                }
+                else if (selection == 5)
+                {
+                    AddStopToFlight(db);
+                }
+
+
+            }
+        }
+
+
+
+        static void AddStopToFlight(FlightInformation db)
+        {
+
+            while (true)
+            {
+                Console.WriteLine("1 - Add Stop to Flight");
+                Console.WriteLine("2 - Remove Stop from Flight");
+                Console.WriteLine("0 - Exit");
+                Console.WriteLine();
+                Console.Write("Enter your command: ");
+                string input = Console.ReadLine();
+
+                int selection = -1;
+                if (int.TryParse(input, out selection))
+                {
+                    if (selection == 0)
+                    {
+                        break;
+                    }
+                    else if (selection == 1)
+                    {
+                        Flight flight = PickFlight(db);
+                        Stops stop = PickStop(db);
+                        if (!flight.Stops.Contains(stop))
+                        {
+                            flight.Stops.Add(stop);
+                            db.SaveChanges();
+
+                        }
+
+
+                    }
+                    else if (selection == 2)
+                    {
+                        Flight flight = PickFlight(db);
+                        Stops stop = PickStop(db);
+                        if (flight.Stops.Contains(stop))
+                        {
+                            flight.Stops.Add(stop);
+                            db.SaveChanges();
+
+                        }
+
+
+                    }
+                }
+            }
+        }
+
+        static void FlightCreate(FlightInformation db)
+        {
+            Console.Write("Flight Name: ");
+            string name = Console.ReadLine();
+            Console.Write("Flight Price: ");
+            string price = Console.ReadLine();
+
+
+            if (name == "")
+            {
+                Console.WriteLine("Canceled!");
+            }
+            else
+            {
+
+                Plane plane = PickPlane(db);
+                if (plane == null)
+                {
+                    Console.WriteLine("Canceled!");
+
+
+                }
+                else
+                {
+                    Flight flight = new Flight();
+                    flight.Name = name;
+                    flight.Price = price;
+                    flight.TransportId = plane;
+                    flight.Stops = new List<Stops>();
+                    flight.Stops.Add(PickStop(db));
+                    db.Flight.Add(flight);
+                }
+                try
+                {
+                    db.SaveChanges();
+                }
+                catch (System.Data.Entity.Validation.DbEntityValidationException dbEx)
+                {
+                    Exception raise = dbEx;
+                    foreach (var validationErrors in dbEx.EntityValidationErrors)
+                    {
+                        foreach (var validationError in validationErrors.ValidationErrors)
+                        {
+                            string message = string.Format("{0}:{1}",
+                                validationErrors.Entry.Entity.ToString(),
+                                validationError.ErrorMessage);
+                            
+                            raise = new InvalidOperationException(message, raise);
+                        }
+                    }
+                    throw raise;
+
+
+                }
+                Console.WriteLine("Flight added!");
+            }
+
+
+        }
+
+        static void FlightRead(FlightInformation db)
+        {
+            Console.WriteLine("Flight:");
+            foreach (var flight in db.Flights)
+            {
+                Console.WriteLine(flight.Name);
+
+
+            }
+
+        }
+
+        static void FlightUpdate(FlightInformation db)
+        {
+            FlightRead(db);
+            Console.Write("Select Flight:");
+            string input = Console.ReadLine();
+
+            int selection = -1;
+            if (int.TryParse(input, out selection))
+            {
+                Flight item = db.Flights.FirstOrDefault(FlightCreate => FlightCreate.Id == selection);
+                if (item != null)
+                {
+                    Console.Write("Enter new flight name: ");
+                    string name = Console.ReadLine();
+
+
+
+
+                    Console.Write("Enter new price: ");
+                    string price = Console.ReadLine();
+
+
+
+
+
+                    item.Name = name;
+                    item.Stops.Add(PickStop(db));
+                    item.Price = price;
+                    item.PlanetId = PickPlane(db);
+                    db.SaveChanges();
+                    Console.Write("Flight Updated!");
+
+                }
+                else
+                {
+                    Console.Write("Flight Not Found!");
+                }
+            }
+        }
+
+
+        static void FlightRemove(FlightInformation db)
+        {
+            FlightRead(db);
+            Console.Write("Select Flight: ");
+            string input = Console.ReadLine();
+
+            int selection = -1;
+            if (int.TryParse(input, out selection))
+            {
+                Flight item = db.Flights.FirstOrDefault(FlightpRead => FlightRead.Id == selection);
+                if (item == null)
+                {
+                    Console.Write("Flight Not Found!");
+
+                }
+                else
+                {
+                    Flight flight = db.Flights.Remove(item);
+                    db.SaveChanges();
+                    Console.Write("Flight Removed!");
+
+                }
+
+            }
+        }
+
+        static Planes PickPlane(TravelInformation db)
+        {
+            if (db.Transport.Count() < 1)
+            {
+                Console.WriteLine("No Planes!");
+                return null;
+            }
+            Console.WriteLine("Planes: ");
+            foreach (var plane in db.Plane)
+            {
+                Console.WriteLine(plane.Name);
+
+            }
+            Console.Write("Select Plane to add Flight: ");
+            string input = Console.ReadLine();
+
+            while (true)
+            {
+                int selection = -1;
+                if (int.TryParse(input, out selection))
+                {
+                    Planes item = db.Plane.FirstOrDefault(plane => plane.Id == selection);
+                    if (item != null)
+                    {
+                        return item;
+                    }
+                }
+                Console.WriteLine("Invalid Plane");
+            }
+
+        }
+        static Flight PickFlight(FlightInformation db)
+        {
+            if (db.Flights.Count() < 1)
+            {
+                Console.WriteLine("No Flight!");
+                return null;
+            }
+            Console.WriteLine("Flight: ");
+            foreach (var flights in db.Flights)
+            {
+                Console.WriteLine(lights.Name);
+
+            }
+            Console.Write("Select Flight: ");
+            string input = Console.ReadLine();
+
+            while (true)
+            {
+                int selection = -1;
+                if (int.TryParse(input, out selection))
+                {
+                    Flight item = db.Flights.FirstOrDefault(trips => flights.Id == selection);
+                    
+                    return item;
+                }
+                Console.WriteLine("Invalid Flight");
+            }
+
+        }
+        public static Stops PickStop(FlightInformation db)
+        {
+            if (db.Plane.Count() < 1)
+            {
+                Console.WriteLine("No Stops!");
+                return null;
+            }
+            Console.WriteLine("Stops: ");
+            foreach (var stop in db.Stops)
+            {
+                Console.WriteLine(stop.Name);
+
+            }
+            Console.Write("Select Stop to add to Flight: ");
+            string input = Console.ReadLine();
+
+            while (true)
+            {
+                int selection = -1;
+                if (int.TryParse(input, out selection))
+                {
+                    Stops item = db.Stops.FirstOrDefault(stops => stops.Id == selection);
+                    if (item != null)
+                    {
+                        return item;
+                    }
+                }
+                Console.WriteLine("Invalid Stop");
+            }
+
+        }
+
+
+    }
+}
